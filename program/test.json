@@ -1,0 +1,144 @@
+{
+    "Rounds": [
+        {
+            "name": "General",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "Which language?",
+                    "correctAnswer": "C++",
+                    "options": [
+                        "C++",
+                        "Java"
+                    ],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "Which IDE?",
+                    "correctAnswer": "vscode",
+                    "options": [
+                        "vscode",
+                        "ms vs"
+                    ],
+                    "correctAnswerIndex": 1
+                }
+            ]
+        },
+        {
+            "name": "NOTHING",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "what",
+                    "correctAnswer": "what????????",
+                    "options": [
+                        "what??",
+                        "what????????"
+                    ],
+                    "correctAnswerIndex": 2
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "what's up?",
+                    "correctAnswer": "Preposition",
+                    "options": [
+                        "Fine",
+                        "Preposition"
+                    ],
+                    "correctAnswerIndex": 2
+                },
+                {
+                    "questionNumber": 3,
+                    "question": "newwwwwwwwwwww",
+                    "correctAnswer": "1234",
+                    "options": [
+                        "abcd",
+                        "1234"
+                    ],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        },
+        {
+            "name": "new round",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "new round new question one",
+                    "correctAnswer": "option one",
+                    "options": [
+                        "option one",
+                        "option two"
+                    ],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "new question 2.0",
+                    "correctAnswer": "new option 2.0 two",
+                    "options": [
+                        "new option 2.0 one",
+                        "new option 2.0 two"
+                    ],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        },
+        {
+            "name": "no opt new",
+            "hasOptions": false,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "qn1",
+                    "correctAnswer": "an1"
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "qn2",
+                    "correctAnswer": "an2"
+                },
+                {
+                    "questionNumber": 3,
+                    "question": "new question added by running program",
+                    "correctAnswer": "its the correct answer"
+                },
+                {
+                    "questionNumber": 4,
+                    "question": "ayoooo it worked",
+                    "correctAnswer": "ayoo its the ans!"
+                }
+            ]
+        },
+        {
+            "name": "apple",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "ball",
+                    "correctAnswer": "dog",
+                    "options": [
+                        "cat",
+                        "dog"
+                    ],
+                    "correctAnswerIndex": 2
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "dolphin",
+                    "correctAnswer": "shark",
+                    "options": [
+                        "shark",
+                        "beluga"
+                    ],
+                    "correctAnswerIndex": 1
+                }
+            ]
+        }
+    ]
+}

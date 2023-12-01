@@ -42,95 +42,316 @@ class Question
 }
 
 // Alternatively, you can still use Module.onRuntimeInitialized if needed
-    Module.onRuntimeInitialized = function() {
-        // This function will be called once Emscripten is initialized
-        console.log('Emscripten initialized');
-    };
+Module.onRuntimeInitialized = function() {
+    // This function will be called once Emscripten is initialized
+    console.log('Emscripten initialized');
+    var msg = Module.initialize(urlToLoad,urlToSave);
+    console.log(msg);
+};
 
-/* function initialize() {
-    try {
-        var message = Module.initialize(urlToLoad, urlToSave);
+function addEvent()
+{
+    try
+    {
+        var eventName = document.getElementById("eventName0").value;
+        var eventID = document.getElementById("eventID0").value;
+
+        if(!eventName.trim())
+        {
+            alert("please enter a valid name");
+            return false;
+        }
+
+        var message = Module.AddNewEvent(eventName, parseInt(eventID));
         showToast(message);
         console.log(message);
-    } catch(error) {
+
+
+        return false;
+    }
+    catch(error)
+    {
         showToast(error);
         console.log(error);
         return false;
     }
-} */
+}
 
- function addRound() {
+function updateEvent()
+{
+    try
+    {
+        var eventID = document.getElementById("eventID1").value;
+        var name = document.getElementById("eventName1").value;
+
+        var message = Module.UpdateEventName(name, parseInt(eventID));
+        showToast(message);
+        console.log(message);
+
+        return false;
+    }
+    catch(error)
+    {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function deleteEvent()
+{
+    try
+    {
+        var eventID = document.getElementById("eventID2").value;
+
+        var message = Module.DeleteEvent(parseInt(eventID));
+        showToast(message);
+        console.log(message);
+
+        return false;
+    }
+    catch(error)
+    {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+
+function addCategory()
+{
+    try
+    {
+        var categoryName = document.getElementById("categoryName_c0").value;
+        var categoryID = document.getElementById("categoryID_c0").value;
+        var eventID = document.getElementById("eventID_c0").value;
+
+        if(!categoryName.trim())
+        {
+            alert("please enter a valid name");
+            return false;
+        }
+
+        var message = Module.AddNewCategory(categoryName, parseInt(eventID), parseInt(categoryID));
+        showToast(message);
+        console.log(message);
+
+
+        return false;
+    }
+    catch(error)
+    {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function updateCategory()
+{
+    try
+    {
+        var categoryName = document.getElementById("categoryName_c1").value;
+        var categoryID = document.getElementById("categoryID_c1").value;
+        var eventID = document.getElementById("eventID_c1").value;
+
+        if(!categoryName.trim())
+        {
+            alert("please enter a valid name");
+            return false;
+        }
+
+        var message = Module.UpdateCategoryName(categoryName, parseInt(eventID), parseInt(categoryID));
+        showToast(message);
+        console.log(message);
+
+
+        return false;
+    }
+    catch(error)
+    {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function deleteCategory()
+{
+    try
+    {
+        var categoryID = document.getElementById("categoryID_c2").value;
+        var eventID = document.getElementById("eventID_c2").value;
+
+        var message = Module.DeleteCategory(parseInt(eventID), parseInt(categoryID));
+        showToast(message);
+        console.log(message);
+
+
+        return false;
+    }
+    catch(error)
+    {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+
+function addRound() {
     try {
-        var roundName = document.getElementById("addRoundTitle").value; 
-        var eventId = document.getElementById("eventId").value;
+        var roundName = document.getElementById("addRoundTitle_r0").value; 
+        var eventId = document.getElementById("eventId_r0").value;
+        var categoryId = document.getElementById("categoryID_r0").value;
+        var roundId = document.getElementById("roundID_r0").value;
        
         if (!roundName.trim()) {
             alert("Please enter a valid round name.");
             return false;
         }
-        Module.initialize(urlToLoad, urlToSave);
-        var message = Module.AddNewRound(roundName, parseInt(eventId));
-        showToast(roundName + " added.");
+        var message = Module.AddNewRound(roundName, parseInt(eventId), parseInt(categoryId), parseInt(roundId));
+        showToast(message);
         console.log(message);   
 
-        closeForm('addRoundForm');
+
         return false;
         
     } catch (error) {
         showToast(error);
-         console.log(error);
+        console.log(error);
         return false;
     }
         
 }
 
-    function deleteRound() {
-        try {
-            var roundName = document.getElementById("roundToDelete").value; 
-       
-        if (!roundName.trim()) {
-            alert("Please enter a valid round name.");
-            return false;
-        }
-        
-        var message = Module.DeleteRound(urlToLoad, urlToSave ,roundName);
+function updateRound() {
+    try {
+        var eventId = document.getElementById("eventId_r1").value;
+        var categoryId = document.getElementById("categoryID_r1").value;
+        var roundId = document.getElementById("roundID_r1").value;
+        var name = document.getElementById("newRoundName_r1").value;
+
+        var message = Module.UpdateRoundName(name, parseInt(eventId), parseInt(categoryId), parseInt(roundId));
         showToast(message);
         console.log(message);
-        
-        closeForm('deleteRoundForm');
-        return false;
-        } catch (error) {
-            showToast(error); 
-             console.log(error);
-            return false;
-        }
-        
-    }
 
-    function updateRoundName() {
-        try {
-            var oldName = document.getElementById("oldRoundName").value; 
-        var newName = document.getElementById("newRoundName").value; 
-        
-        if (!oldName.trim() || !newName.trim()) {
-            alert("Please enter a valid round name.");
-            return false;
-        }
-        var message = Module.UpdateRoundName(urlToLoad, urlToSave , oldName, newName);
+
+        return false;
+    } catch(error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function deleteRound() {
+    try {
+        var eventId = document.getElementById("eventId_r2").value;
+        var categoryId = document.getElementById("categoryID_r2").value;
+        var roundId = document.getElementById("roundID_r2").value;
+
+        var message = Module.DeleteRound(parseInt(eventId), parseInt(categoryId), parseInt(roundId));
         showToast(message);
         console.log(message);
-        
-        closeForm('updateRoundForm');
+
+
         return false;
-        } catch (error) {
-            showToast(error);
-             console.log(error);
+    } catch(error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+
+
+    
+
+
+function addQuestion() {
+    try {
+        var roundID = document.getElementById("roundID_q0").value;
+        var categoryID = document.getElementById("categoryID_q0").value;
+        var eventID = document.getElementById("eventID_q0").value;
+
+        var title = document.getElementById("title_q0").value;
+        var options = document.getElementById("options_q0").value;
+        var correctAnswer = document.getElementById("correctAnswer_q0").value;
+        var correctAnswerIndex = document.getElementById("correctAnswerIndex_q0").value;
+
+        var question = new Question(0, title, options, correctAnswer, correctAnswerIndex);
+
+        if (!roundName.trim() || !title.trim() || !options.trim() || !correctAnswer.trim() || correctAnswerIndex === "") {
+            alert("Please fill in all fields.");
             return false;
         }
-        
-    }
 
-    function ShowRounds() {
+        var message = Module.AddNewQuestion(parseInt(eventID), parseInt(categoryID), parseInt(roundID), question);
+        showToast(message);
+        console.log(message);
+
+
+
+        return false;
+
+    } catch (error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function updateQuestion() {
+    try {
+        var roundID = document.getElementById("roundID_q1").value;
+        var categoryID = document.getElementById("categoryID_q1").value;
+        var eventID = document.getElementById("eventID_q1").value;
+        var questionID = document.getElementById("questionID_q1").value;
+
+        var name = document.getElementById("name_q1").value;
+
+        var message = Module.UpdateQuestion(name, parseInt(eventID), parseInt(categoryID), parseInt(roundID), parseInt(questionID));
+        showToast(message);
+        console.log(message);
+
+
+
+        return false;
+
+    } catch (error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+function deleteQuestion() {
+    try {
+        var roundID = document.getElementById("roundID_q2").value;
+        var categoryID = document.getElementById("categoryID_q2").value;
+        var eventID = document.getElementById("eventID_q2").value;
+        var questionID = document.getElementById("questionID_q2").value;
+
+        var message = Module.DeleteQuestion(parseInt(eventID), parseInt(categoryID), parseInt(roundID), parseInt(questionID));
+        showToast(message);
+        console.log(message);
+
+
+
+        return false;
+
+    } catch (error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+}
+
+
+
+/* function ShowRounds() {
     try {
         var roundsData = Module.ShowRounds(urlToLoad);
 
@@ -164,54 +385,4 @@ class Question
         console.log(error);
         return false;
     }
-}
-
-
-   function addQuestion() {
-    try {
-        document.getElementById("addQuestionForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            // Access the form values
-            var roundName = document.getElementById("roundName").value;
-            var title = document.getElementById("title").value;
-            var options = document.getElementById("options").value;
-            var correctAnswer = document.getElementById("correctAnswer").value;
-            var correctAnswerIndex = document.getElementById("correctAnswerIndex").value;
-
-            var question = new Question(0, title, options, correctAnswer, correctAnswerIndex);
-            console.log("Question Title:", question.title);
-
-            if (!roundName.trim() || !title.trim() || !options.trim() || !correctAnswer.trim() || correctAnswerIndex === "") {
-                alert("Please fill in all fields.");
-                return false;
-            }
-
-            console.log("Submitting form with values:", roundName, title, options, correctAnswer, correctAnswerIndex);
-
-            var message = Module.UpdateRoundQuestions(urlToLoad, urlToSave, question);
-            showToast(message);
-            console.log("UpdateRoundQuestions message:", message);
-
-            closeForm('addQuestionForm');
-        });
-
-        return false;
-
-    } catch (error) {
-        showToast("Error: " + error);
-        console.error("Error caught in addQuestion:", error);
-        return false;
-    }
-}
-
-function loadJsonServer(){
-    
-    var jsonData = Module.LoadJsonFromServer(urlToLoad);
-    
-    console.log("Raw JSON data:", (jsonData));
-    console.log("Fetched JSON data:", JSON.parse(jsonData));
-    showToast(JSON.stringify(JSON.parse(jsonData)));
-}
-
- 
+} */

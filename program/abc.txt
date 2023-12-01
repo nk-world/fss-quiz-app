@@ -1,0 +1,68 @@
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
+
+
+    for(auto i : data["events"][EventId]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
+
+
+    for(auto i : data["events"][EventId]["categories"][CategoryId]["rounds"])
+        if(i["id"] == RoundId)
+            round_found=true;
+    if(!round_found)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
+
+    for(auto i : data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId]["questions"])
+        if(i["id"] == RoundId)
+            question_found=true;
+    if(!question_found)
+        return "Question with ID " + std::to_string(QuestionId) + " was not found";
+
+
+
+
+
+
+
+
+
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            return "Event with ID " + std::to_string(EventId) + " already exists";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

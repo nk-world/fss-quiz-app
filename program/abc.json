@@ -1,0 +1,108 @@
+{
+    "Rounds": [
+        {
+            "name": "General",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "Which language?",
+                    "correctAnswer": "C++",
+                    "options": [
+                        "C++",
+                        "Java"
+                    ],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "Which IDE?",
+                    "correctAnswer": "vscode",
+                    "options": [
+                        "vscode",
+                        "ms vs"
+                    ],
+                    "correctAnswerIndex": 1
+                }
+            ]
+        },
+        {
+            "name": "SOMETHING",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "what's up?",
+                    "correctAnswer": "Preposition",
+                    "options": [
+                        "Fine",
+                        "Preposition"
+                    ],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        },
+        {
+            "name": "new round",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "new round new question one",
+                    "correctAnswer": "option one",
+                    "options": [
+                        "option one",
+                        "option two"
+                    ],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "new question 2.0",
+                    "correctAnswer": "new option 2.0 two",
+                    "options": [
+                        "new option 2.0 one",
+                        "new option 2.0 two"
+                    ],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        },
+        {
+            "name": "apple",
+            "hasOptions": true,
+            "questions": [
+                {
+                    "questionNumber": 1,
+                    "question": "ball",
+                    "correctAnswer": "dog",
+                    "options": [
+                        "cat",
+                        "dog"
+                    ],
+                    "correctAnswerIndex": 2
+                },
+                {
+                    "questionNumber": 2,
+                    "question": "dolphin",
+                    "correctAnswer": "shark",
+                    "options": [
+                        "shark",
+                        "beluga"
+                    ],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "questionNumber": 3,
+                    "question": "mrbean",
+                    "correctAnswer": "actor!",
+                    "options": [
+                        "what?",
+                        "actor!"
+                    ],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        }
+    ]
+}

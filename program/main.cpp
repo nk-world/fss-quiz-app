@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <random>
 #include "json.hpp"
-
+#include <chrono>
+#include <thread>
 #include <emscripten/bind.h>
 #include <emscripten/fetch.h>
 
@@ -33,24 +34,25 @@ struct Question
 
 std::string loadUrl, saveUrl;
 json data;
-std::string LoadJsonFromServer(const std::string &url);
+std::string LoadJsonFromServer();
 void initialize(const std::string &LoadUrl, const std::string &SaveUrl)
 {
-    data = json::parse(LoadJsonFromServer(LoadUrl));
     loadUrl = LoadUrl;
     saveUrl = SaveUrl;
+    data = json::parse(LoadJsonFromServer());
 }
 
-bool SaveDataToServer(const json &data)
+bool SaveDataToServer()
 {
+   // std::cout<<jsonData.dump();
     bool success = false;
 
-    // Create an object to configure the fetch request
+   // Create fetch attributes
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
-    attr.requestData = data.dump().c_str(); // Convert JSON to string
+    attr.requestData = data.dump().c_str();
     attr.requestDataSize = data.dump().length();
 
     // Use emscripten_fetch_create instead of emscripten_fetch
@@ -62,14 +64,18 @@ bool SaveDataToServer(const json &data)
         return false;
     }
 
-    // Use a valid timeout value (e.g., -1 for indefinite wait)
-    emscripten_fetch_wait(fetch, -1);
+    // Wait for the fetch to complete
+   while (fetch->numBytes != fetch->totalBytes)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
     // Process the result (handle success or error)
     if (fetch->status == 200)
     {
-        success = true;
         // Handle successful response, if needed
+        printf("Fetch successful!\n");
+        success = true;
     }
     else
     {
@@ -78,14 +84,15 @@ bool SaveDataToServer(const json &data)
         printf("HTTP Status: %d - %s\n", fetch->status, fetch->statusText);
     }
 
-    // Clean up
+    // Clean up the fetch object
     emscripten_fetch_close(fetch);
 
-    return success;
+    return success;  // Indicate that the fetch request has been initiated
 }
 
-std::string LoadJsonFromServer(const std::string &url)
+std::string LoadJsonFromServer()
 {
+    std::string url = loadUrl;
     int resultSize;
     char *resultData = nullptr;
 
@@ -126,36 +133,36 @@ std::string LoadJsonFromServer(const std::string &url)
 }
 
 
-void fixEventId(json &data)
+/* void fixEventId()
 {
-    int events_size = data["Events"].size();
+    int events_size = data["events"].size();
     for(int i=0; i<events_size; i++)
-        data["Events"][i]["id"] = i+1;
+        data["events"][i]["id"] = i+1;
 }
 
-void fixCategoryId(json &data)
+void fixCategoryId()
 {
-    for(int i=0; i<data["Events"].size(); i++)
-        for(int j=0; j<data["Events"][i]["Categories"].size(); j++)
-            data["Events"][i]["Categories"][j] = j+1;
+    for(int i=0; i<data["events"].size(); i++)
+        for(int j=0; j<data["events"][i]["categories"].size(); j++)
+            data["events"][i]["categories"][j] = j+1;
 }
 
-void fixRoundId(json &data)
+void fixRoundId()
 {
-    for(int i=0; i<data["Events"].size(); i++)
-        for(int j=0; j<data["Events"][i]["Categories"].size(); j++)
-            for(int k=0; k<data["Events"][i]["Categories"][j]["Rounds"].size(); k++)
-                data["Events"][i]["Categories"][j]["Rounds"][k] = k+1;
+    for(int i=0; i<data["events"].size(); i++)
+        for(int j=0; j<data["events"][i]["categories"].size(); j++)
+            for(int k=0; k<data["events"][i]["categories"][j]["rounds"].size(); k++)
+                data["events"][i]["categories"][j]["rounds"][k] = k+1;
 }
 
-void fixQuestionId(json &data)
+void fixQuestionId()
 {
-    for(int i=0; i<data["Events"].size(); i++)
-        for(int j=0; j<data["Events"][i]["Categories"].size(); j++)
-            for(int k=0; k<data["Events"][i]["Categories"][j]["Rounds"].size(); k++)
-                for(int l=0; l<data["Events"][i]["Categories"][j]["Rounds"][k]["Questions"].size(); l++)
-                    data["Events"][i]["Categories"][j]["Rounds"][k]["Questions"][l] = l+1;
-}
+    for(int i=0; i<data["events"].size(); i++)
+        for(int j=0; j<data["events"][i]["categories"].size(); j++)
+            for(int k=0; k<data["events"][i]["categories"][j]["rounds"].size(); k++)
+                for(int l=0; l<data["events"][i]["categories"][j]["rounds"][k]["questions"].size(); l++)
+                    data["events"][i]["categories"][j]["rounds"][k]["questions"][l] = l+1;
+} */
 
 void Shuffle(json &jsonData)
 {
@@ -165,391 +172,460 @@ void Shuffle(json &jsonData)
     std::shuffle(jsonData.begin(), jsonData.end(), generate);
 }
 
-std::string addEvent(const std::string &name)
+std::string addEvent(const std::string &name, const int &EventId)
 {
-    json data = json::parse(LoadJsonFromServer(loadUrl));
-
     json event = json::object();
+
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            return "Event with ID " + std::to_string(EventId) + " already exists";
+
     event["name"] = name;
-    event["id"] = data["Events"].size()+1;
+    event["id"] = EventId;
 
-    data["Events"].push_back(event);
+    data["events"].push_back(event);
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Event added successfully";
     else
         return "Adding event failed";
 }
 
-std::string updateEvent(const std::string &NewName, const int &EventID)
+std::string updateEvent(const std::string &NewName, const int &EventId)
 {
-    const int EventId = EventID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
 
-    if(!data.contains("Events"))
-        return "Events were not found in the specified JSON";        
+    bool found=false;
+
+    if(!data.contains("events"))
+        return "events were not found in the specified JSON";        
     
-    if(!data["Events"].is_array())
-        return "Events is not an array in the specified JSON";
+    if(!data["events"].is_array())
+        return "events is not an array in the specified JSON";
 
-    if (EventId < 0 || EventId > (data["Events"].size()-1))
-    {
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
         return "Event with ID " + std::to_string(EventId) + " was not found";
-    }
 
-    data["Events"][EventId]["name"] = NewName;
+    data["events"][EventId-1]["name"] = NewName;
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Event name updated successfully";
     else
         return "Event name update failed";
 }
 
-std::string deleteEvent(const int &EventID)
+std::string deleteEvent(const int &EventId)
 {
-    const int EventId = EventID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
 
-    if(!data.contains("Events"))
-        return "Events were not found in the specified JSON";        
+    bool found=false;
+
+    if(!data.contains("events"))
+        return "events were not found in the specified JSON";        
     
-    if(!data["Events"].is_array())
-        return "Events is not an array in the specified JSON";
+    if(!data["events"].is_array())
+        return "events is not an array in the specified JSON";
 
-    if (EventId < 0 || EventId > (data["Events"].size()-1))
-    {
+   for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
         return "Event with ID " + std::to_string(EventId) + " was not found";
-    }
 
-    data["Events"].erase(EventId);
-    fixEventId(data);
+    data["events"].erase(EventId-1);
+    // fixEventId();
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Event name updated successfully";
     else
         return "Event name update failed";
 }
 
-std::string addCategory(const std::string &categoryName, const int &EventID)
+std::string addCategory(const std::string &categoryName, const int &EventId, const int &CategoryId)
 {
-    const int EventId = EventID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    
 
     json category = json::object();
-    category["name"] = categoryName;
-    category["id"] = data["Events"][EventId]["Categories"].size()+1;
-    data["Events"][EventId]["Categories"].push_back(category);
 
-    bool isSuccess = SaveDataToServer(data);
+
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            return "Category with ID " + std::to_string(CategoryId) + " already exists";
+
+    category["name"] = categoryName;
+    category["id"] = CategoryId;
+    data["events"][EventId-1]["categories"].push_back(category);
+
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Category added successfully";
     else
         return "Adding category failed";
 }
 
-std::string updateCategory(const std::string &newName, const int &EventID, const int &CategoryID)
+std::string updateCategory(const std::string &newName, const int &EventId, const int &CategoryId)
 {
-    const int EventId = EventID-1, CategoryId = CategoryID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false;
+    bool category_found=false;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
-    data["Events"][EventId]["Categories"][CategoryId]["name"] = newName;
+    data["events"][EventId-1]["categories"][CategoryId-1]["name"] = newName;
     
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Category updated successfully";
     else
         return "Updating category failed";
 }
 
-std::string deleteCategory(const int &EventID, int &CategoryID)
+std::string deleteCategory(const int &EventId, const int &CategoryId)
 {
-    const int EventId = EventID-1, CategoryId = CategoryID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false, category_found=false;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
-    data["Events"][EventId]["Categories"].erase(CategoryId);
-    fixCategoryId(data);
+    data["events"][EventId]["categories"].erase(CategoryId-1);
+    // fixCategoryId();
     
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Category deleted successfully";
     else
         return "Deleting category failed";
 }
 
-std::string addRound(const std::string &name, const int &EventID, const int &CategoryID)
+std::string addRound(const std::string &name, const int &EventId, const int &CategoryId, const int &RoundId)
 {
-    const int EventId = EventID-1, CategoryId = CategoryID-1;
 
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
+        if(i["id"] == RoundId)
+            return "Round with ID " + std::to_string(RoundId) + " already exists";
 
     json round = json::object();
     round["name"] = name;
-    round["id"] = data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()+1;
+    round["id"] = RoundId;
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"].push_back(round);
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].push_back(round);
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Round added successfully";
     else
         return "Adding round failed";
 }
 
-std::string updateRound(const std::string &NewName, const int &EventID, const int &CategoryID, const int &RoundID)
+std::string updateRound(const std::string &NewName, const int &EventId, const int &CategoryId, const int &RoundId)
 {
-    const int EventId = EventID-1, RoundId = RoundID-1, CategoryId = CategoryID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false, category_found=false, round_found=false;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
     // check if there are rounds
-    if(!data["Events"][EventId]["Categories"][CategoryId].contains("Rounds"))
-        return "Rounds were not found";
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"].is_array())
-        return "Rounds is not an array";
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()-1))
-        return "Round ID " + std::to_string(RoundId) + " does not exist";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1].contains("rounds"))
+        return "rounds were not found";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].is_array())
+        return "rounds is not an array";
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
+        if(i["id"] == RoundId)
+            round_found=true;
+    if(!round_found)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["name"] = NewName;
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["name"] = NewName;
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Round name updated successfully";
     else
         return "Round name update failed";
 }
 
-std::string deleteRound(const int &EventID, const int &RoundID, const int &CategoryID)
+std::string deleteRound(const int &EventId, const int &CategoryId, const int &RoundId)
 {
-    const int EventId = EventID-1, RoundId = RoundID-1, CategoryId = CategoryID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false, category_found=false, round_found=false;
 
    // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
     // check if there are rounds
-    if(!data["Events"][EventId]["Cateogires"][CategoryId].contains("Rounds"))
-        return "Rounds were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1]["Cateogires"][CategoryId-1].contains("rounds"))
+        return "rounds were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Cateogires"][CategoryId]["Rounds"].is_array())
-        return "Rounds in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["Cateogires"][CategoryId-1]["rounds"].is_array())
+        return "rounds in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Cateogires"][CategoryId]["Rounds"].size()-1))
-        return "Round ID " + std::to_string(RoundId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
+        if(i["id"] == RoundId)
+            round_found=true;
+    if(!round_found)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"].erase(RoundId);
-    fixRoundId(data);
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].erase(RoundId-1);
+    // fixRoundId();
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Round deleted successfully";
     else
         return "Round deletion failed";
 }
 
-std::string addQuestion(const int &EventID, const int &RoundID, const int &CategoryID, Question &question)
+std::string addQuestion(const int &EventId, const int &CategoryId, const int &RoundId, Question &question)
 {
-    const int RoundId = RoundID-1, EventId = EventID-1, CategoryId = CategoryID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"].push_back(question.toJson());
 
-    bool isSuccess = SaveDataToServer(data);
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"].push_back(question.toJson());
+
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Question added successfully";
     else
         return "Adding question failed";
 }
 
-std::string updateQuestion(const int &RoundID, const int &EventID, const int &CategoryID, const int &QuestionID, const std::string &newName)
+std::string updateQuestion(const std::string &newName, const int &EventId, const int &CategoryId, const int &RoundId, const int &QuestionId)
 {
-    const int RoundId = RoundID-1, EventId = EventID-1, CategoryId = CategoryID-1, QuestionId = QuestionID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false, category_found=false, round_found=false, question_found=false;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
         
     // check if there are rounds
-    if(!data["Events"][EventId]["Categories"][CategoryId].contains("Rounds"))
-        return "Rounds were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1]["categories"][CategoryId-1].contains("rounds"))
+        return "rounds were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"].is_array())
-        return "Rounds in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].is_array())
+        return "rounds in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()-1))
-        return "Round ID " + std::to_string(RoundId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
+        if(i["id"] == RoundId)
+            round_found=true;
+    if(!round_found)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
 
     // check if there are questions
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId].contains("Questions"))
-        return "Questions were not found in the given IDs";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1].contains("questions"))
+        return "questions were not found in the given IDs";
 
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"].is_array())
-        return "Questions is not an array in the given IDs";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"].is_array())
+        return "questions is not an array in the given IDs";
 
-    if(QuestionId < 0 || QuestionId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"].size()-1))
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"])
+        if(i["id"] == RoundId)
+            question_found=true;
+    if(!question_found)
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"][QuestionId]["title"] = newName;
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"][QuestionId-1]["title"] = newName;
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Question renamed successfully";
     else
         return "Renaming question failed";
 }
 
-std::string deleteQuestion(const int &RoundID, const int &EventID, const int &QuestionID, const int &CategoryID, const std::string &newName)
+std::string deleteQuestion(const std::string &newName, const int &RoundId, const int &EventId, const int &QuestionId, const int &CategoryId)
 {
-    const int RoundId = RoundID-1, EventId = EventID-1, CategoryId = CategoryID-1, QuestionId = QuestionID-1;
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+
+    bool found=false, category_found=false, round_found=false, question_found=false;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
-        return "Event ID " + std::to_string(EventId) + " does not exist";
+    for(auto i : data["events"])
+        if(i["id"] == EventId)
+            found=true;
+    if(!found)
+        return "Event with ID " + std::to_string(EventId) + " was not found";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"].is_array())
+        return "categories in in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
-        return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"])
+        if(i["id"] == CategoryId)
+            category_found=true;
+    if(!category_found)
+        return "Category with ID " + std::to_string(CategoryId) + " was not found";
+
     // check if there are rounds
-    if(!data["Events"][EventId]["Categories"][CategoryId].contains("Rounds"))
-        return "Rounds were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId-1]["categories"][CategoryId-1].contains("rounds"))
+        return "rounds were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"].is_array())
-        return "Rounds in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].is_array())
+        return "rounds in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()-1))
-        return "Round ID " + std::to_string(RoundId) + " does not exist in event " + std::to_string(EventId);
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
+        if(i["id"] == RoundId)
+            round_found=true;
+    if(!round_found)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
 
     // check if there are questions
-    if(!data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId].contains("Questions"))
-        return "Questions were not found in the given IDs";
+    if(!data["events"][EventId-1]["rounds"][RoundId-1]["categories"][CategoryId-1].contains("questions"))
+        return "questions were not found in the given IDs";
 
-    if(!data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId]["Questions"].is_array())
-        return "Questions is not an array in the given IDs";
+    if(!data["events"][EventId-1]["rounds"][RoundId-1]["categories"][CategoryId-1]["questions"].is_array())
+        return "questions is not an array in the given IDs";
 
-    if(QuestionId < 0 || QuestionId > (data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId]["Questions"].size()-1))
+    for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"])
+        if(i["id"] == RoundId)
+            question_found=true;
+    if(!question_found)
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
 
-    data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"].erase(QuestionId);
-    fixQuestionId(data);
+    data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"].erase(QuestionId);
+    // fixQuestionId();
 
-    bool isSuccess = SaveDataToServer(data);
+    bool isSuccess = SaveDataToServer();
     if(isSuccess)
         return "Question deleted successfully";
     else
         return "Deleting question failed";
 }
 
+
 std::vector<std::string> showRounds(const int &EventID, const int &CategoryID)
 {
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+    
     const int EventId = EventID-1, CategoryId = CategoryID-1;
     std::vector<std::string> rounds;
 
-    for(auto round : data["Events"][EventId]["Categories"][CategoryId]["Rounds"])
+    for(auto round : data["events"][EventId]["categories"][CategoryId]["rounds"])
         rounds.push_back(round["name"]);
 
     return rounds;
@@ -557,84 +633,84 @@ std::vector<std::string> showRounds(const int &EventID, const int &CategoryID)
 
 json loadRoundData(const int &EventID, const int &CategoryID, const int &RoundID)
 {
-    json data = json::parse(LoadJsonFromServer(loadUrl));
+    
     const int EventId = EventID-1, CategoryId = CategoryID-1, RoundId = RoundID-1;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
+    if(EventId < 0 || EventId > (data["events"].size()-1))
         return "Event ID " + std::to_string(EventId) + " does not exist";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in event ID " + std::to_string(EventId) + " is not an array";
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
+    if(!data["events"][EventId].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId]["categories"].is_array())
+        return "categories in event ID " + std::to_string(EventId) + " is not an array";
+    if(CategoryId < 0 || CategoryId > (data["events"][EventId]["categories"].size()-1))
         return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
 
     // check if there are rounds
-    if(!data["Events"][EventId]["Categories"][CategoryId].contains("Rounds"))
-        return "Rounds were not found";
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"].is_array())
-        return "Rounds is not an array";
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()-1))
+    if(!data["events"][EventId]["categories"][CategoryId].contains("rounds"))
+        return "rounds were not found";
+    if(!data["events"][EventId]["categories"][CategoryId]["rounds"].is_array())
+        return "rounds is not an array";
+    if(RoundId < 0 || RoundId > (data["events"][EventId]["categories"][CategoryId]["rounds"].size()-1))
         return "Round ID " + std::to_string(RoundId) + " does not exist";
 
-    json roundData = data["Events"][EventId]["Category"][CategoryId]["Rounds"][RoundId];
+    json roundData = data["events"][EventId]["Category"][CategoryId]["rounds"][RoundId];
     
-    for(int i=0; i<roundData["Questions"].size(); i++)
-        Shuffle(roundData["Questions"][i]["options"]);
+    for(int i=0; i<roundData["questions"].size(); i++)
+        Shuffle(roundData["questions"][i]["options"]);
     return roundData;
 }
 
-json loadQuestion(const int &EventID, const int &RoundID, const int &CategoryID, const int &QuestionID)
+json loadQuestion(const int &EventID, const int &CategoryID, const int &RoundID, const int &QuestionID)
 {
     const int RoundId = RoundID-1, EventId = EventID-1, CategoryId = CategoryID-1, QuestionId = QuestionID-1;
 
     // check if there are events
-    if(!data.contains("Events"))
-        return "Events were not found in the JSON";
+    if(!data.contains("events"))
+        return "events were not found in the JSON";
 
-    if(!data["Events"].is_array())
-        return "Events is not an arrray in the JSON";
+    if(!data["events"].is_array())
+        return "events is not an arrray in the JSON";
 
-    if(EventId < 0 || EventId > (data["Events"].size()-1))
+    if(EventId < 0 || EventId > (data["events"].size()-1))
         return "Event ID " + std::to_string(EventId) + " does not exist";
 
     // check if there are categories
-    if(!data["Events"][EventId].contains("Categories"))
-        return "Categories were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId].contains("categories"))
+        return "categories were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"].is_array())
-        return "Categories in in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId]["categories"].is_array())
+        return "categories in in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(CategoryId < 0 || CategoryId > (data["Events"][EventId]["Categories"].size()-1))
+    if(CategoryId < 0 || CategoryId > (data["events"][EventId]["categories"].size()-1))
         return "Category " + std::to_string(CategoryId) + " does not exist in event " + std::to_string(EventId);
     // check if there are rounds
-    if(!data["Events"][EventId]["Categories"][CategoryId].contains("Rounds"))
-        return "Rounds were not found in event ID " + std::to_string(EventId);
+    if(!data["events"][EventId]["categories"][CategoryId].contains("rounds"))
+        return "rounds were not found in event ID " + std::to_string(EventId);
 
-    if(!data["Events"][EventId]["Categories"][CategoryId]["Rounds"].is_array())
-        return "Rounds in event ID " + std::to_string(EventId) + " is not an array";
+    if(!data["events"][EventId]["categories"][CategoryId]["rounds"].is_array())
+        return "rounds in event ID " + std::to_string(EventId) + " is not an array";
 
-    if(RoundId < 0 || RoundId > (data["Events"][EventId]["Categories"][CategoryId]["Rounds"].size()-1))
+    if(RoundId < 0 || RoundId > (data["events"][EventId]["categories"][CategoryId]["rounds"].size()-1))
         return "Round ID " + std::to_string(RoundId) + " does not exist in event " + std::to_string(EventId);
 
     // check if there are questions
-    if(!data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId].contains("Questions"))
-        return "Questions were not found in the given IDs";
+    if(!data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId].contains("questions"))
+        return "questions were not found in the given IDs";
 
-    if(!data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId]["Questions"].is_array())
-        return "Questions is not an array in the given IDs";
+    if(!data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId]["questions"].is_array())
+        return "questions is not an array in the given IDs";
 
-    if(QuestionId < 0 || QuestionId > (data["Events"][EventId]["Rounds"][RoundId]["Categories"][CategoryId]["Questions"].size()-1))
+    if(QuestionId < 0 || QuestionId > (data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId]["questions"].size()-1))
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
 
-    json question = data["Events"][EventId]["Categories"][CategoryId]["Rounds"][RoundId]["Questions"][QuestionId];
+    json question = data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId]["questions"][QuestionId];
     Shuffle(question["options"]);
     return question;
 }
@@ -656,13 +732,12 @@ EMSCRIPTEN_BINDINGS(my_module)
     function("UpdateRoundName", &updateRound);
     function("DeleteRound", &deleteRound);
 
-    function("AddNewQuestionToRound", &addQuestion);
-    function("UpdateRoundQuestions", &updateQuestion);
-    function("DeleteRoundQuestions", &deleteQuestion);
+    function("AddNewQuestion", &addQuestion);
+    function("UpdateQuestion", &updateQuestion);
+    function("DeleteQuestion", &deleteQuestion);
 
     function("LoadRoundData", &loadRoundData);
     function("ShowRounds", &showRounds);
-    function("LoadJsonFromServer", &LoadJsonFromServer);
     function("LoadQuestionData", &loadQuestion);
 
     function("initialize", &initialize);

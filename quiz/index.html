@@ -10,30 +10,175 @@
 
 <h2>F-Quiz</h2>
 <div class="menu-container">
+    <button id="menu" onclick="openForm('addEventForm')">Add New Event</button>
+    <button id="menu" onclick="openForm('updateEventForm')">Update Event Name</button>
+    <button id="menu" onclick="openForm('deleteEventForm')">Delete Event</button>
+    <button id="menu" onclick="openForm('addCategoryForm')">Add New Category</button>
+    <button id="menu" onclick="openForm('updateCategoryForm')">Update Category Name</button>
+    <button id="menu" onclick="openForm('deleteCategoryForm')">Delete Category</button>
     <button id="menu" onclick="openForm('addRoundForm')">Add New Round</button>
-    <button id="menu" onclick="openForm('addQuestionForm')">Add New Question</button>
-    <button id="menu" onclick="openForm('updateQuestionForm')">Update Question</button>
     <button id="menu" onclick="openForm('updateRoundForm')">Update Round Name</button>
     <button id="menu" onclick="openForm('deleteRoundForm')">Delete Round</button>
-    <button id="menu" onclick="openForm('loadRoundsForm')">Show Rounds</button>
+    <button id="menu" onclick="openForm('addQuestionForm')">Add New Question</button>
+    <button id="menu" onclick="openForm('updateQuestionForm')">Update Question</button>
+    <button id="menu" onclick="openForm('deleteQuestionForm')">Delete Question</button>
+    <button id="menu" onclick="openForm('showRoundsForm')">Show Rounds</button>
     <button id="menu" onclick="openForm('loadRoundForm')">Load Round</button>
-    <button id="menu" onclick="openForm('loadJsonServerForm')">Load Json</button>
+    <button id="menu" onclick="openForm('loadQuestionForm')">Load Question</button>
 	
 	
 </div>
 
 <div id="overlay"></div>
-<!-- Panel for updating round questions -->
+
+
+<!-- Panel for adding new event -->
+<div id="addEventForm" class="modal">
+    <div class="form-container">
+        <form  id="addEventSubmitForm" onsubmit="return addEvent();">
+            <label class="heading">Add new Event</label>
+
+            <label for="title">Event name:</label>
+            <input type="text" id="eventName0" name="eventName0" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID0" name="eventID0" required>
+
+            <div class="button-container">
+                <input type="submit" value="Add Event">
+                <button type="button" onclick="closeForm('addEventForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Panel for updating event -->
+<div id="updateEventForm" class="modal">
+    <div class="form-container">
+        <form  id="updateEventSubmitForm" onsubmit="return updateEvent();">
+            <label class="heading">Update Event Name</label>
+
+            <label for="title">Event new name:</label>
+            <input type="text" id="eventName1" name="eventName1" required>
+
+            <label for="title">Event  ID:</label>
+            <input type="number" id="eventID1" name="eventID1" required>
+
+            <div class="button-container">
+                <input type="submit" value="Update Event">
+                <button type="button" onclick="closeForm('updateEventForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Panel for deleting event -->
+<div id="deleteEventForm" class="modal">
+    <div class="form-container">
+        <form  id="deleteEventSubmitForm" onsubmit="return deleteEvent();">
+            <label class="heading">Delete Event:</label>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID2" name="eventID2" required>
+
+            <div class="button-container">
+                <input type="submit" value="Delete Event">
+                <button type="button" onclick="closeForm('deleteEventForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Panel for adding new category -->
+<div id="addCategoryForm" class="modal">
+    <div class="form-container">
+        <form  id="addCategorySubmitForm" onsubmit="return addCategory();">
+            <label class="heading">Add new Category</label>
+
+            <label for="title">Category name:</label>
+            <input type="text" id="categoryName_c0" name="categoryName_c0" required>
+
+            <label for="title">Event ID: </label>
+            <input type="number" id="eventID_c0" name="eventID_c0" required>
+
+            <label for="title">Category ID: </label>
+            <input type="number" id="categoryID_c0" name="categoryID_c0" required>
+
+            <div class="button-container">
+                <input type="submit" value="Add Category">
+                <button type="button" onclick="closeForm('addCategoryForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Panel for updating category -->
+<div id="updateCategoryForm" class="modal">
+    <div class="form-container">
+        <form  id="updateCategorySubmitForm" onsubmit="return updateCategory();">
+            <label class="heading">Update Category Name</label>
+
+            <label for="title">Category new name:</label>
+            <input type="text" id="categroyName_c1" name="categoryName_c1" required>
+
+            <label for="title">Event  ID:</label>
+            <input type="number" id="eventID_c1" name="eventID_c1" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_c1" name="categoryID_c1" required>
+
+            <div class="button-container">
+                <input type="submit" value="Update Category">
+                <button type="button" onclick="closeForm('updateCategoryForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Panel for deleting category -->
+<div id="deleteCategoryForm" class="modal">
+    <div class="form-container">
+        <form  id="updateCategorySubmitForm" onsubmit="return deleteCategory();">
+            <label class="heading">Delete Category Name</label>
+
+            <label for="title">Event  ID:</label>
+            <input type="number" id="eventID_c2" name="eventID_c2" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_c2" name="categoryID_c2" required>
+
+            <div class="button-container">
+                <input type="submit" value="Delete Category">
+                <button type="button" onclick="closeForm('deleteCategoryForm')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Panel for adding new round -->
 <div id="addRoundForm" class="modal">
     <div class="form-container">
         <form  id="addRoundSubmitForm" onsubmit="return addRound();">
             <label class="heading">Add new Round</label>
 
             <label for="title">Round name:</label>
-            <input type="text" id="addRoundTitle" name="addRoundTitle" required>
+            <input type="text" id="addRoundTitle_r0" name="addRoundTitle_r0" required>
 
             <label for="title">Event ID:</label>
-            <input type="number" id="eventId" name="eventId" required>
+            <input type="number" id="eventId_r0" name="eventId_r0" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_r0" name="categoryID_r0" required>
+
+            <label for="title">Round ID:</label>
+            <input type="number" id="roundID_r0" name="roundID_r0" required>
 
             <div class="button-container">
                 <input type="submit" value="Add Round">
@@ -47,14 +192,20 @@
 <!-- Panel for updating a round name -->
 <div id="updateRoundForm" class="modal">
     <div class="form-container">
-        <form id="updateRound" onsubmit="return updateRoundName();">
+        <form id="updateRound" onsubmit="return updateRound();">
             <label class="heading">Update Round Name:</label>
 
-            <label for="title">Round name to update:</label>
-            <input type="text" id="oldRoundName" name="oldRoundName" required>
+            <label for="title">Round ID to update:</label>
+            <input type="number" id="RoundID_r1" name="RoundID_r1" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_r1" name="categoryID_r1" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID_r1" name="eventID_r1" required>
 
             <label for="title">New Round name:</label>
-            <input type="text" id="newRoundName" name="newRoundName" required>
+            <input type="text" id="newRoundName_r1" name="newRoundName_r1" required>
 
             <div class="button-container">
                 <input type="submit" value="Update">
@@ -69,8 +220,15 @@
     <div class="form-container">
         <form id="deleteRound" onsubmit="return deleteRound()">
             <label class="heading">Delete Round:</label>
-            <label for="title">Round name to delete:</label>
-            <input type="text" id="roundToDelete" name="roundToDelete" required>
+           
+            <label for="title">Round ID to delete:</label>
+            <input type="number" id="RoundID_r2" name="RoundID_r2" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_r2" name="categoryID_r2" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID_r2" name="eventID_r2" required>
 
             <div class="button-container">
                 <input type="submit" value="Delete">
@@ -80,67 +238,32 @@
     </div>
 </div>
 
-<!-- Panel for loading rounds -->
-<div id="loadRoundsForm" class="modal">
-    <div class="form-container">
-        <label class="heading">Rounds:</label>
-
-        <!-- Container for round buttons -->
-        <div id="roundButtonsContainer"></div>
-
-        <div class="button-container">
-            <button type="button" onclick="closeForm('loadRoundsForm')">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- Panel for loading a specific round -->
-<div id="loadRoundForm" class="modal">
-    <div class="form-container">
-        <!-- Add content for loading a specific round -->
-        <label class="big-label">Load Round:</label>
-        <!-- Add input or dropdown for selecting the round to load -->
-
-        <div class="button-container">
-            <button type="submit" value="Submit" onclick="loadRound()">Load Round</button>
-            <button type="button" onclick="closeForm('loadRoundForm')">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- Panel for updating round questions -->
-<div id="updateRoundQuestionForm" class="modal">
-    <div class="form-container">
-        <form action="process_update_round_questions.php" method="post">
-            <label class="big-label">Update Round Questions:</label>
-            <input type="text" id="updateRoundQuestions" name="updateRoundQuestions" required>
-
-            <div class="button-container">
-                <input type="submit" value="Update Questions">
-                <button type="button" onclick="closeForm('updateRoundQuestionForm')">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
+<!-- Panel for adding a question -->
 <div id="addQuestionForm" class="modal">
     <div class="form-container">
         <form id="addQuestionForm" onsubmit="return addQuestion();">
             <label class="heading">Add New Question:</label>
             
-            <label for="title">Round Name:</label>
-            <input type="text" id="roundName" name="roundName" required>
+            <label for="title">Round ID:</label>
+            <input type="number" id="roundID_q0" name="roundID_q0" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_q0" name="categoryID_q0" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID_q0" name="eventID_q0" required>
 
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title" required>
+            <input type="text" id="title_q0" name="title_q0" required>
 
             <label for="options">Options (comma-separated):</label>
-            <input type="text" id="options" name="options" required>
+            <input type="text" id="options_q0" name="options_q0" required>
 
             <label for="correctAnswer">Correct Answer:</label>
-            <input type="text" id="correctAnswer" name="correctAnswer" required>
+            <input type="text" id="correctAnswer_q0" name="correctAnswer_q0" required>
 
             <label for="correctAnswerIndex">Correct Answer Index:</label>
-            <input type="number" id="correctAnswerIndex" name="correctAnswerIndex" required>
+            <input type="number" id="correctAnswerIndex_q0" name="correctAnswerIndex_q0" required>
 
             <div class="button-container">
                 <input type="submit" value="Submit">
@@ -149,34 +272,63 @@
         </form>
     </div>
 </div>
+
+
 <!-- Panel for updating a question -->
 <div id="updateQuestionForm" class="modal">
     <div class="form-container">
         <form id="updateQuestionForm" onsubmit="return updateQuestion();">
-            <label class="big-label">Update Question:</label>
-            <input type="text" id="updateQuestion" name="updateQuestion" required>
+            <label class="heading">Update Question:</label>
 
-            <!-- Add new labels and input fields for updating a question... -->
+            <label for="title">Round ID:</label>
+            <input type="number" id="roundID_q1" name="roundID_q1" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_q1" name="categoryID_q1" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID_q1" name="eventID_q1" required>
+
+            <label for="title">Question ID:</label>
+            <input type="number" id="questionID_q1" name="questionID_q1" required>
+
+            <label for="title">New name:</label>
+            <input type="text" id="name_q1" name="name_q1" required>
+
 
             <div class="button-container">
-                <input type="submit" value="Update">
+                <input type="submit" value="Update Question">
                 <button type="button" onclick="closeForm('updateQuestionForm')">Cancel</button>
             </div>
         </form>
     </div>
 </div>
-<!-- Panel for updating a question -->
-<div id="loadJsonServerForm" class="modal">
+
+<!-- Panel for deleting a question -->
+<div id="deleteQuestionForm" class="modal">
     <div class="form-container">
-        <form id="loadJsonServerForm" onsubmit="return loadJsonServer();">
-            
+        <form id="deleteQuestionForm" onsubmit="return deleteQuestion();">
+            <label class="heading">Delete Question:</label>
+
+            <label for="title">Round ID:</label>
+            <input type="number" id="roundID_q2" name="roundID_q2" required>
+
+            <label for="title">Category ID:</label>
+            <input type="number" id="categoryID_q2" name="categoryID_q2" required>
+
+            <label for="title">Event ID:</label>
+            <input type="number" id="eventID_q2" name="eventID_q2" required>
+
+            <label for="title">Question ID:</label>
+            <input type="number" id="questionID_q2" name="questionID_q2" required>
+
             <div class="button-container">
-                <button type="button" onclick="closeForm('loadJsonServerForm')">Cancel</button>
+                <input type="submit" value="Delete Question">
+                <button type="button" onclick="closeForm('deleteQuestionForm')">Cancel</button>
             </div>
         </form>
     </div>
 </div>
-
 
 <div id="toast-container"></div>
 <script src="embind.js"></script>

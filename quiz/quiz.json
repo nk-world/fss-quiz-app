@@ -1,143 +1,14 @@
 {
-    "Events": [
+    "events": [
         {
-            "Rounds": [
+            "categories": [
                 {
-                    "Questions": [
-                        {
-                            "correctAnswer": "apple",
-                            "correctAnswerIndex": 3,
-                            "id": 1,
-                            "options": [
-                                "ball",
-                                "cat",
-                                "apple",
-                                "dog"
-                            ],
-                            "title": "this is the title of a test question"
-                        },
-                        {
-                            "correctAnswer": "apple 2",
-                            "correctAnswerIndex": 3,
-                            "id": 2,
-                            "options": [
-                                "ball 2",
-                                "cat 2",
-                                "apple 2",
-                                "dog 2"
-                            ],
-                            "title": "this is the title of a test question 2"
-                        }
-                    ],
                     "id": 1,
-                    "name": "test in test"
-                },
-                {
-                    "Questions": [
-                        {
-                            "correctAnswer": "apple 2222",
-                            "correctAnswerIndex": 3,
-                            "id": 1,
-                            "options": [
-                                "ball 2222",
-                                "cat 2222",
-                                "apple 2222",
-                                "dog 2222"
-                            ],
-                            "title": "this is the title of a test question 22"
-                        },
-                        {
-                            "correctAnswer": "apple 2 2222",
-                            "correctAnswerIndex": 3,
-                            "id": 2,
-                            "options": [
-                                "ball 2 2222",
-                                "cat 2 2222",
-                                "apple 2 2222",
-                                "dog 2 2222"
-                            ],
-                            "title": "this is the title of a test question 2 22"
-                        }
-                    ],
-                    "id": 2,
-                    "name": "test in test 2"
-                }
-            ],
-            "id": 1,
-            "name": "test"
-        },
-        {
-            "Rounds": [
-                {
-                    "Questions": [
-                        {
-                            "correctAnswer": "a",
-                            "correctAnswerIndex": 3,
-                            "id": 1,
-                            "options": [
-                                "b",
-                                "c",
-                                "a",
-                                "g"
-                            ],
-                            "title": "diff qn"
-                        },
-                        {
-                            "correctAnswer": "asfds",
-                            "correctAnswerIndex": 3,
-                            "id": 2,
-                            "options": [
-                                "adsfasd",
-                                "asfds",
-                                "dfa",
-                                "dfshdshdfsh"
-                            ],
-                            "title": "diff qn 2"
-                        }
-                    ],
-                    "id": 1,
-                    "name": "diff"
-                },
-                {
-                    "Questions": [
-                        {
-                            "correctAnswer": "a",
-                            "correctAnswerIndex": 3,
-                            "id": 1,
-                            "options": [
-                                "gdfhshd",
-                                "fdsgsdfgsd",
-                                "a",
-                                "dfgdfs"
-                            ],
-                            "title": "fgjjf"
-                        },
-                        {
-                            "correctAnswer": "apple 2 2222",
-                            "correctAnswerIndex": 3,
-                            "id": 2,
-                            "options": [
-                                "rthrhsrt",
-                                "rthrsh",
-                                "srhtrh",
-                                "rtshrh"
-                            ],
-                            "title": "ytrhyrth"
-                        }
-                    ],
-                    "id": 2,
-                    "name": "jfgjfgj"
+                    "name": "apple"
                 }
             ],
             "id": 2,
-            "name": "different"
-        },
-        {
-            "Rounds": [
-                {
-                    "name": "test apple ball cat"
-                }
-            ]
+            "name": "apple ball cat"
         }
     ]
 }
