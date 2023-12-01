@@ -988,7 +988,7 @@ function dbg(text) {
 // === Body ===
 
 var ASM_CONSTS = {
-  97708: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
+  97788: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
 };
 
 
@@ -1340,24 +1340,21 @@ var ASM_CONSTS = {
     };
 
 
-  var __embind_register_bigint = (primitiveType, name, size, minRange, maxRange) => {};
-
-  var embind_init_charCodes = () => {
-      var codes = new Array(256);
-      for (var i = 0; i < 256; ++i) {
-          codes[i] = String.fromCharCode(i);
+  var structRegistrations = {
+  };
+  
+  var runDestructors = (destructors) => {
+      while (destructors.length) {
+        var ptr = destructors.pop();
+        var del = destructors.pop();
+        del(ptr);
       }
-      embind_charCodes = codes;
     };
-  var embind_charCodes;
-  var readLatin1String = (ptr) => {
-      var ret = "";
-      var c = ptr;
-      while (HEAPU8[c]) {
-          ret += embind_charCodes[HEAPU8[c++]];
-      }
-      return ret;
-    };
+  
+  /** @suppress {globalThis} */
+  function simpleReadValueFromPointer(pointer) {
+      return this['fromWireType'](HEAP32[((pointer)>>2)]);
+    }
   
   var awaitingDependencies = {
   };
@@ -1367,12 +1364,6 @@ var ASM_CONSTS = {
   
   var typeDependencies = {
   };
-  
-  var BindingError;
-  var throwBindingError = (message) => { throw new BindingError(message); };
-  
-  
-  
   
   var InternalError;
   var throwInternalError = (message) => { throw new InternalError(message); };
@@ -1415,6 +1406,94 @@ var ASM_CONSTS = {
         onComplete(typeConverters);
       }
     };
+  var __embind_finalize_value_object = (structType) => {
+      var reg = structRegistrations[structType];
+      delete structRegistrations[structType];
+  
+      var rawConstructor = reg.rawConstructor;
+      var rawDestructor = reg.rawDestructor;
+      var fieldRecords = reg.fields;
+      var fieldTypes = fieldRecords.map((field) => field.getterReturnType).
+                concat(fieldRecords.map((field) => field.setterArgumentType));
+      whenDependentTypesAreResolved([structType], fieldTypes, (fieldTypes) => {
+        var fields = {};
+        fieldRecords.forEach((field, i) => {
+          var fieldName = field.fieldName;
+          var getterReturnType = fieldTypes[i];
+          var getter = field.getter;
+          var getterContext = field.getterContext;
+          var setterArgumentType = fieldTypes[i + fieldRecords.length];
+          var setter = field.setter;
+          var setterContext = field.setterContext;
+          fields[fieldName] = {
+            read: (ptr) => getterReturnType['fromWireType'](getter(getterContext, ptr)),
+            write: (ptr, o) => {
+              var destructors = [];
+              setter(setterContext, ptr, setterArgumentType['toWireType'](destructors, o));
+              runDestructors(destructors);
+            }
+          };
+        });
+  
+        return [{
+          name: reg.name,
+          'fromWireType': (ptr) => {
+            var rv = {};
+            for (var i in fields) {
+              rv[i] = fields[i].read(ptr);
+            }
+            rawDestructor(ptr);
+            return rv;
+          },
+          'toWireType': (destructors, o) => {
+            // todo: Here we have an opportunity for -O3 level "unsafe" optimizations:
+            // assume all fields are present without checking.
+            for (var fieldName in fields) {
+              if (!(fieldName in o)) {
+                throw new TypeError(`Missing field: "${fieldName}"`);
+              }
+            }
+            var ptr = rawConstructor();
+            for (fieldName in fields) {
+              fields[fieldName].write(ptr, o[fieldName]);
+            }
+            if (destructors !== null) {
+              destructors.push(rawDestructor, ptr);
+            }
+            return ptr;
+          },
+          'argPackAdvance': GenericWireTypeSize,
+          'readValueFromPointer': simpleReadValueFromPointer,
+          destructorFunction: rawDestructor,
+        }];
+      });
+    };
+
+  var __embind_register_bigint = (primitiveType, name, size, minRange, maxRange) => {};
+
+  var embind_init_charCodes = () => {
+      var codes = new Array(256);
+      for (var i = 0; i < 256; ++i) {
+          codes[i] = String.fromCharCode(i);
+      }
+      embind_charCodes = codes;
+    };
+  var embind_charCodes;
+  var readLatin1String = (ptr) => {
+      var ret = "";
+      var c = ptr;
+      while (HEAPU8[c]) {
+          ret += embind_charCodes[HEAPU8[c++]];
+      }
+      return ret;
+    };
+  
+  
+  
+  
+  var BindingError;
+  var throwBindingError = (message) => { throw new BindingError(message); };
+  
   /** @param {Object=} options */
   function sharedRegisterType(rawType, registeredInstance, options = {}) {
       var name = registeredInstance.name;
@@ -2365,13 +2444,6 @@ var ASM_CONSTS = {
     };
   
   
-  var runDestructors = (destructors) => {
-      while (destructors.length) {
-        var ptr = destructors.pop();
-        var del = destructors.pop();
-        del(ptr);
-      }
-    };
   
   
   
@@ -2703,10 +2775,6 @@ var ASM_CONSTS = {
   
   
   
-  /** @suppress {globalThis} */
-  function simpleReadValueFromPointer(pointer) {
-      return this['fromWireType'](HEAP32[((pointer)>>2)]);
-    }
   var __embind_register_emval = (rawType, name) => {
       name = readLatin1String(name);
       registerType(rawType, {
@@ -3266,6 +3334,49 @@ var ASM_CONSTS = {
         destructorFunction(ptr) {
           _free(ptr);
         }
+      });
+    };
+
+  
+  
+  var __embind_register_value_object = (
+      rawType,
+      name,
+      constructorSignature,
+      rawConstructor,
+      destructorSignature,
+      rawDestructor
+    ) => {
+      structRegistrations[rawType] = {
+        name: readLatin1String(name),
+        rawConstructor: embind__requireFunction(constructorSignature, rawConstructor),
+        rawDestructor: embind__requireFunction(destructorSignature, rawDestructor),
+        fields: [],
+      };
+    };
+
+  
+  
+  var __embind_register_value_object_field = (
+      structType,
+      fieldName,
+      getterReturnType,
+      getterSignature,
+      getter,
+      getterContext,
+      setterArgumentType,
+      setterSignature,
+      setter,
+      setterContext
+    ) => {
+      structRegistrations[structType].fields.push({
+        fieldName: readLatin1String(fieldName),
+        getterReturnType,
+        getter: embind__requireFunction(getterSignature, getter),
+        getterContext,
+        setterArgumentType,
+        setter: embind__requireFunction(setterSignature, setter),
+        setterContext,
       });
     };
 
@@ -4003,9 +4114,11 @@ var ASM_CONSTS = {
       return 0;
     };
 
+  var _llvm_eh_typeid_for = (type) => type;
+
+InternalError = Module['InternalError'] = class InternalError extends Error { constructor(message) { super(message); this.name = 'InternalError'; }};
 embind_init_charCodes();
 BindingError = Module['BindingError'] = class BindingError extends Error { constructor(message) { super(message); this.name = 'BindingError'; }};
-InternalError = Module['InternalError'] = class InternalError extends Error { constructor(message) { super(message); this.name = 'InternalError'; }};
 init_ClassHandle();
 init_embind();;
 init_RegisteredPointer();
@@ -4032,6 +4145,8 @@ var wasmImports = {
   /** @export */
   __resumeException: ___resumeException,
   /** @export */
+  _embind_finalize_value_object: __embind_finalize_value_object,
+  /** @export */
   _embind_register_bigint: __embind_register_bigint,
   /** @export */
   _embind_register_bool: __embind_register_bool,
@@ -4055,6 +4170,10 @@ var wasmImports = {
   _embind_register_std_string: __embind_register_std_string,
   /** @export */
   _embind_register_std_wstring: __embind_register_std_wstring,
+  /** @export */
+  _embind_register_value_object: __embind_register_value_object,
+  /** @export */
+  _embind_register_value_object_field: __embind_register_value_object_field,
   /** @export */
   _embind_register_void: __embind_register_void,
   /** @export */
@@ -4126,7 +4245,9 @@ var wasmImports = {
   /** @export */
   invoke_viiiiii: invoke_viiiiii,
   /** @export */
-  invoke_viiiiiii: invoke_viiiiiii
+  invoke_viiiiiii: invoke_viiiiiii,
+  /** @export */
+  llvm_eh_typeid_for: _llvm_eh_typeid_for
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors');
@@ -4275,6 +4396,17 @@ function invoke_viiii(index,a1,a2,a3,a4) {
   }
 }
 
+function invoke_v(index) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)();
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
@@ -4323,17 +4455,6 @@ function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_v(index) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;

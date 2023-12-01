@@ -18,8 +18,10 @@ struct Question
     std::vector<std::string> options;
     int correctAnswerIndex;
     std::string correctAnswer;
+    std::string type;
+    std::string path; // for audio visual
 
-    json toJson()
+    json toJson() const
     {
         return json
         {
@@ -27,7 +29,9 @@ struct Question
             {"title", title},
             {"options", options},
             {"correctAnswerIndex", correctAnswerIndex},
-            {"correctAnswer", correctAnswer}
+            {"correctAnswer", correctAnswer},
+            {"type", type},
+            {"path", path}
         };
     }
 };
@@ -235,14 +239,22 @@ std::string deleteEvent(const int &EventId)
     if(!found)
         return "Event with ID " + std::to_string(EventId) + " was not found";
 
-    data["events"].erase(EventId-1);
+    try
+    {
+        data["events"].erase(EventId-1);
+    }
+    catch(const std::exception& e)
+    {
+        return e.what();
+    }
+    
     // fixEventId();
 
     bool isSuccess = SaveDataToServer();
     if(isSuccess)
-        return "Event name updated successfully";
+        return "Event deleted successfully";
     else
-        return "Event name update failed";
+        return "Event deletion failed";
 }
 
 std::string addCategory(const std::string &categoryName, const int &EventId, const int &CategoryId)
@@ -340,7 +352,7 @@ std::string deleteCategory(const int &EventId, const int &CategoryId)
     if(!category_found)
         return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
-    data["events"][EventId]["categories"].erase(CategoryId-1);
+    data["events"][EventId-1]["categories"].erase(CategoryId-1);
     // fixCategoryId();
     
     bool isSuccess = SaveDataToServer();
@@ -450,10 +462,10 @@ std::string deleteRound(const int &EventId, const int &CategoryId, const int &Ro
         return "Category with ID " + std::to_string(CategoryId) + " was not found";
 
     // check if there are rounds
-    if(!data["events"][EventId-1]["Cateogires"][CategoryId-1].contains("rounds"))
+    if(!data["events"][EventId-1]["categories"][CategoryId-1].contains("rounds"))
         return "rounds were not found in event ID " + std::to_string(EventId);
 
-    if(!data["events"][EventId-1]["Cateogires"][CategoryId-1]["rounds"].is_array())
+    if(!data["events"][EventId-1]["categories"][CategoryId-1]["rounds"].is_array())
         return "rounds in event ID " + std::to_string(EventId) + " is not an array";
 
     for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"])
@@ -472,7 +484,7 @@ std::string deleteRound(const int &EventId, const int &CategoryId, const int &Ro
         return "Round deletion failed";
 }
 
-std::string addQuestion(const int &EventId, const int &CategoryId, const int &RoundId, Question &question)
+std::string addQuestion(const int &EventId, const int &CategoryId, const int &RoundId, const Question &question)
 {
 
 
@@ -551,7 +563,7 @@ std::string updateQuestion(const std::string &newName, const int &EventId, const
         return "Renaming question failed";
 }
 
-std::string deleteQuestion(const std::string &newName, const int &RoundId, const int &EventId, const int &QuestionId, const int &CategoryId)
+std::string deleteQuestion(const int &EventId, const int &CategoryId, const int &RoundId, const int &QuestionId)
 {
 
     bool found=false, category_found=false, round_found=false, question_found=false;
@@ -596,10 +608,10 @@ std::string deleteQuestion(const std::string &newName, const int &RoundId, const
         return "Round with ID " + std::to_string(RoundId) + " was not found";
 
     // check if there are questions
-    if(!data["events"][EventId-1]["rounds"][RoundId-1]["categories"][CategoryId-1].contains("questions"))
+    if(!(data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1].contains("questions")))
         return "questions were not found in the given IDs";
 
-    if(!data["events"][EventId-1]["rounds"][RoundId-1]["categories"][CategoryId-1]["questions"].is_array())
+    if(!(data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"].is_array()))
         return "questions is not an array in the given IDs";
 
     for(auto i : data["events"][EventId-1]["categories"][CategoryId-1]["rounds"][RoundId-1]["questions"])
@@ -701,10 +713,10 @@ json loadQuestion(const int &EventID, const int &CategoryID, const int &RoundID,
         return "Round ID " + std::to_string(RoundId) + " does not exist in event " + std::to_string(EventId);
 
     // check if there are questions
-    if(!data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId].contains("questions"))
+    if(!data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId].contains("questions"))
         return "questions were not found in the given IDs";
 
-    if(!data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId]["questions"].is_array())
+    if(!data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId]["questions"].is_array())
         return "questions is not an array in the given IDs";
 
     if(QuestionId < 0 || QuestionId > (data["events"][EventId]["rounds"][RoundId]["categories"][CategoryId]["questions"].size()-1))
@@ -720,25 +732,32 @@ EMSCRIPTEN_BINDINGS(my_module)
 {
     register_vector<std::string>("VectorString");
 
-    function("AddNewEvent", &addEvent);
-    function("UpdateEventName", &updateEvent);
-    function("DeleteEvent", &deleteEvent);
+        function("AddNewEvent", &addEvent);
+        function("UpdateEventName", &updateEvent);
+        function("DeleteEvent", &deleteEvent);
 
-    function("AddNewCategory", &addCategory);
-    function("UpdateCategoryName", &updateCategory);
-    function("DeleteCategory", &deleteCategory);
-    
-    function("AddNewRound", &addRound);
-    function("UpdateRoundName", &updateRound);
-    function("DeleteRound", &deleteRound);
+        function("AddNewCategory", &addCategory);
+        function("UpdateCategoryName", &updateCategory);
+        function("DeleteCategory", &deleteCategory);
+        
+        function("AddNewRound", &addRound);
+        function("UpdateRoundName", &updateRound);
+        function("DeleteRound", &deleteRound);
 
-    function("AddNewQuestion", &addQuestion);
-    function("UpdateQuestion", &updateQuestion);
-    function("DeleteQuestion", &deleteQuestion);
+        function("AddNewQuestion", &addQuestion);
+        function("UpdateQuestion", &updateQuestion);
+        function("DeleteQuestion", &deleteQuestion);
 
-    function("LoadRoundData", &loadRoundData);
-    function("ShowRounds", &showRounds);
-    function("LoadQuestionData", &loadQuestion);
+        function("LoadRoundData", &loadRoundData);
+        function("ShowRounds", &showRounds);
+        function("LoadQuestionData", &loadQuestion);
 
-    function("initialize", &initialize);
+        function("initialize", &initialize);
+
+    value_object<Question>("Question")
+        .field("id", &Question::id)
+        .field("title", &Question::title)
+        .field("options", &Question::options)
+        .field("correctAnswerIndex", &Question::correctAnswerIndex)
+        .field("correctAnswer", &Question::correctAnswer);
 }

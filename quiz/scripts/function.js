@@ -36,8 +36,8 @@ class Question
         this.id = id;
         this.title = title;
         this.options = options;
-        this.correctAnswer = correctAnswer;
         this.correctAnswerIndex = correctAnswerIndex;
+        this.correctAnswer = correctAnswer;
     }
 }
 
@@ -228,9 +228,9 @@ function addRound() {
 
 function updateRound() {
     try {
-        var eventId = document.getElementById("eventId_r1").value;
+        var eventId = document.getElementById("eventID_r1").value;
         var categoryId = document.getElementById("categoryID_r1").value;
-        var roundId = document.getElementById("roundID_r1").value;
+        var roundId = document.getElementById("RoundID_r1").value;
         var name = document.getElementById("newRoundName_r1").value;
 
         var message = Module.UpdateRoundName(name, parseInt(eventId), parseInt(categoryId), parseInt(roundId));
@@ -248,9 +248,9 @@ function updateRound() {
 
 function deleteRound() {
     try {
-        var eventId = document.getElementById("eventId_r2").value;
+        var eventId = document.getElementById("eventID_r2").value;
         var categoryId = document.getElementById("categoryID_r2").value;
-        var roundId = document.getElementById("roundID_r2").value;
+        var roundId = document.getElementById("RoundID_r2").value;
 
         var message = Module.DeleteRound(parseInt(eventId), parseInt(categoryId), parseInt(roundId));
         showToast(message);
@@ -281,18 +281,12 @@ function addQuestion() {
         var correctAnswer = document.getElementById("correctAnswer_q0").value;
         var correctAnswerIndex = document.getElementById("correctAnswerIndex_q0").value;
 
-        var question = new Question(0, title, options, correctAnswer, correctAnswerIndex);
+        var question = new Question(0, title, options, parseInt(correctAnswerIndex), correctAnswer);
 
-        if (!roundName.trim() || !title.trim() || !options.trim() || !correctAnswer.trim() || correctAnswerIndex === "") {
-            alert("Please fill in all fields.");
-            return false;
-        }
 
         var message = Module.AddNewQuestion(parseInt(eventID), parseInt(categoryID), parseInt(roundID), question);
         showToast(message);
         console.log(message);
-
-
 
         return false;
 
