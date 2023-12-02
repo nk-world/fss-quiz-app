@@ -1,0 +1,17 @@
+    int eventId = FindEventId(EventId);
+    int categoryId = FindCategoryId(eventId, CategoryId);
+    int roundId = FindRoundId(eventId, categoryId, RoundId);
+    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
+
+
+    if (eventId = -1)
+        return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
+    if (categoryId = -1)
+        return "Category with ID " + std::to_string(CategoryId) + " does not exist";
+
+    if (roundId = -1)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
+
+    if (questionId = -1)
+        return "Question with ID " + std::to_string(QuestionId) + " was not found";

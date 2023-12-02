@@ -1,0 +1,11 @@
+<IfModule mod_mime.c>
+    AddType application/wasm .wasm
+</IfModule>
+
+<IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header set Access-Control-Allow-Headers "Content-Type"
+        Header always set Access-Control-Max-Age "1000"
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+</IfModule>

@@ -1,12 +1,56 @@
 {
     "events": [
         {
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Gold",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "Options",
+                            "questions": [
+                                {
+                                    "correctAnswer": "2",
+                                    "correctAnswerIndex": 2,
+                                    "id": 2,
+                                    "options": [
+                                        "1",
+                                        "2",
+                                        "3"
+                                    ],
+                                    "path": "path",
+                                    "title": "1 or 2 or 3?",
+                                    "type": "text"
+                                },
+                                {
+                                    "correctAnswer": "o2",
+                                    "correctAnswerIndex": 2,
+                                    "id": 3,
+                                    "options": [
+                                        "o1",
+                                        "o2",
+                                        "o3",
+                                        "o4"
+                                    ],
+                                    "path": "path",
+                                    "title": "newwwwwwwww",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
             "id": 1,
-            "name": "new event used for testing purpose"
+            "name": "Level A"
         },
         {
-            "id": 2,
-            "name": "test A"
+            "id": 3,
+            "name": "apple"
+        },
+        {
+            "name": "dsafasd"
         }
     ]
 }

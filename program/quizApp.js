@@ -988,7 +988,7 @@ function dbg(text) {
 // === Body ===
 
 var ASM_CONSTS = {
-  97804: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
+  97052: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
 };
 
 
@@ -4374,10 +4374,10 @@ function invoke_ii(index,a1) {
   }
 }
 
-function invoke_i(index) {
+function invoke_viiii(index,a1,a2,a3,a4) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)();
+    getWasmTableEntry(index)(a1,a2,a3,a4);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -4385,10 +4385,10 @@ function invoke_i(index) {
   }
 }
 
-function invoke_viiii(index,a1,a2,a3,a4) {
+function invoke_i(index) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1,a2,a3,a4);
+    return getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
