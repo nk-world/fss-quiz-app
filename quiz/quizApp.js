@@ -712,7 +712,7 @@ class CppException extends EmscriptenEH {
 }
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
-  wasmBinaryFile = 'embind.wasm';
+  wasmBinaryFile = 'quizApp.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
@@ -988,7 +988,7 @@ function dbg(text) {
 // === Body ===
 
 var ASM_CONSTS = {
-  97788: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
+  97804: ($0, $1, $2) => { var url = UTF8ToString($0); var xhr = new XMLHttpRequest(); xhr.open("GET", url, false); xhr.send(); if (xhr.status === 200) { var responseData = xhr.responseText; var resultPtr = _malloc(responseData.length + 1); stringToUTF8(responseData, resultPtr, responseData.length + 1); setValue($1, resultPtr, 'i32'); setValue($2, responseData.length, 'i32'); } else { setValue($1, 0, 'i32'); } }
 };
 
 

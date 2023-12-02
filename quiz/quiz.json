@@ -1,34 +1,12 @@
 {
     "events": [
         {
-            "categories": [
-                {
-                    "id": 1,
-                    "name": "apple",
-                    "rounds": [
-                        {
-                            "id": 1,
-                            "name": "dis iz aye raa und du nut come plane",
-                            "questions": [
-                                {
-                                    "correctAnswer": "What?",
-                                    "correctAnswerIndex": 2,
-                                    "id": 1,
-                                    "options": [
-                                        "sus",
-                                        "What?"
-                                    ],
-                                    "path": "",
-                                    "title": "asdfasdfads",
-                                    "type": "text"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
             "id": 1,
-            "name": "cup"
+            "name": "new event used for testing purpose"
+        },
+        {
+            "id": 2,
+            "name": "test A"
         }
     ]
 }

@@ -1,3 +1,4 @@
+
 var urlToLoad = "http://localhost/quiz/quiz.json";
 var urlToSave = "http://localhost/quiz/write.php";
    
@@ -164,7 +165,6 @@ function updateCategory()
         }
 
         var message = Module.UpdateCategoryName(categoryName, parseInt(eventID), parseInt(categoryID));
-        
         showToast(message);
         console.log(message);
 
@@ -272,6 +272,33 @@ function deleteRound() {
     
 
 
+/* function addQuestion() {
+    try {
+        var roundID = document.getElementById("roundID_q0").value;
+        var categoryID = document.getElementById("categoryID_q0").value;
+        var eventID = document.getElementById("eventID_q0").value;
+
+        var title = document.getElementById("title_q0").value;
+        var options = document.getElementById("options_q0").value;
+        var correctAnswer = document.getElementById("correctAnswer_q0").value;
+        var correctAnswerIndex = document.getElementById("correctAnswerIndex_q0").value;
+
+        var question = new Question(0, title, options, parseInt(correctAnswerIndex), correctAnswer);
+
+
+        var message = Module.AddNewQuestion(parseInt(eventID), parseInt(categoryID), parseInt(roundID), question);
+        showToast(message);
+        console.log(message);
+
+        return false;
+
+    } catch (error) {
+        showToast(error);
+        console.log(error);
+        return false;
+    }
+} */
+
 function addQuestion() {
     try {
         var roundID = document.getElementById("roundID_q0").value;
@@ -295,7 +322,7 @@ function addQuestion() {
         var type = "text"; // needs a field
         var path = "path"; //needs a field
         
-        var question = new Question(0, title, optionVectorEmcc,parseInt(correctAnswerIndex), correctAnswer, type, path);
+        var question = new Question(0, parseInt(0), title, optionVectorEmcc, parseInt(correctAnswerIndex), correctAnswer, type, path);
         var message = Module.AddNewQuestion(parseInt(eventID), parseInt(categoryID), parseInt(roundID), question);
         showToast(message);
         console.log(message);
