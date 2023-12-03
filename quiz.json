@@ -1,3 +1,24 @@
 {
-	
+    "events": [
+        {
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Gold",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "General"
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "name": "aaaa"
+                }
+            ],
+            "id": 1,
+            "name": "Level A"
+        }
+    ]
 }
