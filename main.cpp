@@ -376,7 +376,7 @@ std::string updateRound(std::string NewName, int EventId, int CategoryId, int Ro
 std::string deleteRound(int EventId, int CategoryId, int RoundId)
 {
     int eventId = FindEventId(EventId);
-   
+    
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
 
