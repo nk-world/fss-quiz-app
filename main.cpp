@@ -139,28 +139,6 @@ std::string LoadJsonFromServer()
     }
 }
 
-/* void fixEventId()
-{
-    int events_size = data["events"].size();
-    for(int i=0; i<events_size; i++)
-        data["events"][i]["id"] = i+1;
-}
-
-void fixCategoryId()
-{
-    for(int i=0; i<data["events"].size(); i++)
-        for(int j=0; j<data["events"][i]["categories"].size(); j++)
-            data["events"][i]["categories"][j] = j+1;
-}
-
-void fixRoundId()
-{
-    for(int i=0; i<data["events"].size(); i++)
-        for(int j=0; j<data["events"][i]["categories"].size(); j++)
-            for(int k=0; k<data["events"][i]["categories"][j]["rounds"].size(); k++)
-                data["events"][i]["categories"][j]["rounds"][k] = k+1;
-}
-
 void fixQuestionId()
 {
     for(int i=0; i<data["events"].size(); i++)
@@ -168,7 +146,7 @@ void fixQuestionId()
             for(int k=0; k<data["events"][i]["categories"][j]["rounds"].size(); k++)
                 for(int l=0; l<data["events"][i]["categories"][j]["rounds"][k]["questions"].size(); l++)
                     data["events"][i]["categories"][j]["rounds"][k]["questions"][l] = l+1;
-} */
+}
 
 void Shuffle(json &jsonData)
 {
@@ -284,8 +262,6 @@ std::string deleteEvent(int EventId)
         return e.what();
     }
 
-    // fixEventId();
-
     bool isSuccess = SaveDataToServer();
     if (isSuccess)
         return "Event deleted successfully";
@@ -345,7 +321,6 @@ std::string deleteCategory(int EventId, int CategoryId)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
     data["events"][eventId]["categories"].erase(categoryId);
-    // fixCategoryId();
 
     bool isSuccess = SaveDataToServer();
     if (isSuccess)
@@ -416,7 +391,6 @@ std::string deleteRound(int EventId, int CategoryId, int RoundId)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
 
     data["events"][eventId]["categories"][categoryId]["rounds"].erase(roundId);
-    // fixRoundId();
 
     bool isSuccess = SaveDataToServer();
     if (isSuccess)
@@ -490,7 +464,7 @@ std::string deleteQuestion(int EventId, int CategoryId, int RoundId, int Questio
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
 
     data["events"][eventId]["categories"][categoryId ]["rounds"][roundId]["questions"].erase(questionId);
-    // fixQuestionId();
+    fixQuestionId();
 
     bool isSuccess = SaveDataToServer();
     if (isSuccess)
