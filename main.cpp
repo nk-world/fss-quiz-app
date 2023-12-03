@@ -1,8 +1,8 @@
+#include "json.hpp"
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <random>
-#include "json.hpp"
 #include <chrono>
 #include <thread>
 #include <emscripten/bind.h>
@@ -204,7 +204,8 @@ int FindCategoryId(int eventId, int categoryId)
     return -1;
 }
 
-int FindRoundId(int eventId, int categoryId, int roundId){
+int FindRoundId(int eventId, int categoryId, int roundId)
+{
 
     int index=0;
     for(auto i: data["events"][eventId]["categories"][categoryId]["rounds"])
@@ -217,8 +218,8 @@ int FindRoundId(int eventId, int categoryId, int roundId){
     return -1;
 }
 
-int FindQuestionId(int eventId, int categoryId, int roundId, int questionId){
-
+int FindQuestionId(int eventId, int categoryId, int roundId, int questionId)
+{
     int index=0;
     for(auto i: data["events"][eventId]["categories"][categoryId]["rounds"][roundId]["questions"])
     {
@@ -315,12 +316,12 @@ std::string addCategory(std::string categoryName, int EventId, int CategoryId)
 std::string updateCategory(std::string newName, int EventId, int CategoryId)
 {
     int eventId = FindEventId(EventId);
-int categoryId = FindCategoryId(eventId, CategoryId);
+    int categoryId = FindCategoryId(eventId, CategoryId);
    
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
 
-if (categoryId == -1)
+    if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
     data["events"][eventId ]["categories"][categoryId]["name"] = newName;
@@ -588,6 +589,6 @@ EMSCRIPTEN_BINDINGS(my_module)
     function("DeleteQuestion", &deleteQuestion);
 
     function("LoadRoundData", &loadRoundData);
-    //function("ShowRounds", &showRounds);
+    //function("ShowRounds", &showRounds); // no need as per now
     function("LoadQuestionData", &loadQuestion);
 }
