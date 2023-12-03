@@ -126,7 +126,7 @@ void fixQuestionId()
         for(int j=0; j<data["events"][i]["categories"].size(); j++)
             for(int k=0; k<data["events"][i]["categories"][j]["rounds"].size(); k++)
                 for(int l=0; l<data["events"][i]["categories"][j]["rounds"][k]["questions"].size(); l++)
-                    data["events"][i]["categories"][j]["rounds"][k]["questions"][l] = l+1;
+                    data["events"][i]["categories"][j]["rounds"][k]["questions"][l]["id"] = l+1;
 }
 
 void Shuffle(json &jsonData)
@@ -359,7 +359,7 @@ std::string updateRound(std::string NewName, int EventId, int CategoryId, int Ro
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
-    int roundId = RoundId -1;
+    int roundId = FindRoundId(eventId, categoryId, RoundId);
 
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
@@ -385,7 +385,7 @@ std::string deleteRound(int EventId, int CategoryId, int RoundId)
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
-    int roundId = RoundId -1;
+    int roundId = FindRoundId(eventId, categoryId, RoundId);
 
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
