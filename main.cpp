@@ -47,54 +47,35 @@ std::string initialize(const std::string &LoadUrl, const std::string &SaveUrl)
     return "initialized";
 }
 
-bool SaveDataToServer()
-{
-    // std::cout<<jsonData.dump();
-    bool success = false;
-
-    // Create fetch attributes
-    emscripten_fetch_attr_t attr;
-    emscripten_fetch_attr_init(&attr);
-    strcpy(attr.requestMethod, "POST");
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
-    const char* headers[] = {"Content-Type", "application/json", NULL};
-    attr.requestHeaders = headers;
-    attr.requestData = data.dump().c_str();
-    attr.requestDataSize = data.dump().length();
-
-    // Use emscripten_fetch_create instead of emscripten_fetch
-    emscripten_fetch_t *fetch = emscripten_fetch(&attr, saveUrl.c_str());
-
-    if (!fetch)
-    {
-        // Handle fetch creation failure
+EM_ASYNC_JS(bool, saveDataToServer, (const char* saveUrl, const char* data), {
+    try {
+        let jsonData = UTF8ToString(data);
+        let url = UTF8ToString(saveUrl);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: jsonData,
+        });
+        
+        if (response.ok) {
+            out('Data saved successfully!');
+            return true;
+        } else {
+            out('Failed to save data. Status: ' + response.status);
+            return false;
+        }
+    } catch (error) {
+        out('Error during data save: ' + error.toString());
         return false;
     }
+});
 
-    // Wait for the fetch to complete
-    while (fetch->numBytes != fetch->totalBytes)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
 
-    // Process the result (handle success or error)
-    if (fetch->status == 200)
-    {
-        // Handle successful response, if needed
-        printf("Fetch successful!\n");
-        success = true;
-    }
-    else
-    {
-        // Handle other HTTP status codes or errors
-        // Log the status and status text for debugging
-        printf("HTTP Status: %d - %s\n", fetch->status, fetch->statusText);
-    }
-
-    // Clean up the fetch object
-    emscripten_fetch_close(fetch);
-
-    return success; // Indicate that the fetch request has been initiated
+bool SaveDataToServer()
+{
+   return saveDataToServer(saveUrl.c_str(), data.dump().c_str());
 }
 
 std::string LoadJsonFromServer()
@@ -273,13 +254,15 @@ std::string deleteEvent(int EventId)
 std::string addCategory(std::string categoryName, int EventId, int CategoryId)
 {
     int eventId = FindEventId(EventId);
+    if (eventId == -1)
+        return "Event with ID " + std::to_string(EventId) + " does not exist.";
     int categoryId = FindCategoryId(eventId, CategoryId);
-    json category = json::object();
 
     if (!data.empty())
         if (categoryId != -1)
             return "Category with ID " + std::to_string(CategoryId) + " already exists";
 
+    json category = json::object();
     category["name"] = categoryName;
     category["id"] = CategoryId;
     data["events"][eventId]["categories"].push_back(category);
@@ -294,10 +277,11 @@ std::string addCategory(std::string categoryName, int EventId, int CategoryId)
 std::string updateCategory(std::string newName, int EventId, int CategoryId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
    
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
+    int categoryId = FindCategoryId(eventId, CategoryId);
 
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
@@ -314,10 +298,11 @@ std::string updateCategory(std::string newName, int EventId, int CategoryId)
 std::string deleteCategory(int EventId, int CategoryId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
    
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
+    int categoryId = FindCategoryId(eventId, CategoryId);
 
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
@@ -334,7 +319,15 @@ std::string deleteCategory(int EventId, int CategoryId)
 std::string addRound(std::string name, int EventId, int CategoryId, int RoundId)
 {
     int eventId = FindEventId(EventId);
+   
+    if (eventId == -1)
+        return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
     int categoryId = FindCategoryId(eventId, CategoryId);
+
+    if (categoryId == -1)
+        return "Category with ID " + std::to_string(CategoryId) + " does not exist";
+    
     int roundId = FindRoundId(eventId, categoryId, RoundId);
 
     if (!data.empty())
@@ -356,15 +349,17 @@ std::string addRound(std::string name, int EventId, int CategoryId, int RoundId)
 
 std::string updateRound(std::string NewName, int EventId, int CategoryId, int RoundId)
 {
-    int eventId = EventId - 1;
-    int categoryId = CategoryId - 1;
-    int roundId = RoundId -1;
-
+    int eventId = FindEventId(EventId);
+   
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
 
+    int categoryId = FindCategoryId(eventId, CategoryId);
+
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
+
+    int roundId = RoundId -1;
 
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
@@ -381,14 +376,16 @@ std::string updateRound(std::string NewName, int EventId, int CategoryId, int Ro
 std::string deleteRound(int EventId, int CategoryId, int RoundId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
-
+   
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
 
+    int categoryId = FindCategoryId(eventId, CategoryId);
+
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
+
+    int roundId = RoundId -1;
 
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
@@ -405,8 +402,19 @@ std::string deleteRound(int EventId, int CategoryId, int RoundId)
 std::string addQuestion(int EventId, int CategoryId, int RoundId, Question question)
 {
     int eventId = FindEventId(EventId);
+   
+    if (eventId == -1)
+        return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
     int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
+
+    if (categoryId == -1)
+        return "Category with ID " + std::to_string(CategoryId) + " does not exist";
+
+    int roundId = RoundId -1;
+
+    if (roundId == -1)
+        return "Round with ID " + std::to_string(RoundId) + " was not found";
     
     data["events"][eventId]["categories"][categoryId]["rounds"][roundId]["questions"].push_back(question.toJson());
     int size = data["events"][eventId]["categories"][categoryId]["rounds"][roundId]["questions"].size();
@@ -422,18 +430,21 @@ std::string addQuestion(int EventId, int CategoryId, int RoundId, Question quest
 std::string updateQuestion(std::string newName, int EventId, int CategoryId, int RoundId, int QuestionId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
-    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
-
+   
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
+    int categoryId = FindCategoryId(eventId, CategoryId);
 
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
+    int roundId = RoundId -1;
+
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
+
+    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
 
     if (questionId == -1)
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
@@ -450,18 +461,21 @@ std::string updateQuestion(std::string newName, int EventId, int CategoryId, int
 std::string deleteQuestion(int EventId, int CategoryId, int RoundId, int QuestionId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
-    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
-  
+   
     if (eventId == -1)
         return "Event with ID " + std::to_string(EventId) + " does not exist.";
+
+    int categoryId = FindCategoryId(eventId, CategoryId);
 
     if (categoryId == -1)
         return "Category with ID " + std::to_string(CategoryId) + " does not exist";
 
+    int roundId = RoundId -1;
+
     if (roundId == -1)
         return "Round with ID " + std::to_string(RoundId) + " was not found";
+
+    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
 
     if (questionId == -1)
         return "Question with ID " + std::to_string(QuestionId) + " was not found";
@@ -492,14 +506,16 @@ std::vector<std::string> showRounds(const int &EventID, const int &CategoryID)
 val loadRoundData(int EventId, int CategoryId, int RoundId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
 
     if (eventId == -1)
         return val("Event with ID " + std::to_string(EventId) + " does not exist.");
 
+    int categoryId = FindCategoryId(eventId, CategoryId);
+
     if (categoryId == -1)
         return val("Category with ID " + std::to_string(CategoryId) + " does not exist");
+
+    int roundId = FindRoundId(eventId, categoryId, RoundId);
 
     if (roundId == -1)
         return val("Round with ID " + std::to_string(RoundId) + " was not found");
@@ -515,18 +531,21 @@ val loadRoundData(int EventId, int CategoryId, int RoundId)
 val loadQuestion(int EventId, int CategoryId, int RoundId, int QuestionId)
 {
     int eventId = FindEventId(EventId);
-    int categoryId = FindCategoryId(eventId, CategoryId);
-    int roundId = FindRoundId(eventId, categoryId, RoundId);
-    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
 
     if (eventId == -1)
         return val("Event with ID " + std::to_string(EventId) + " does not exist.");
 
+    int categoryId = FindCategoryId(eventId, CategoryId);
+
     if (categoryId == -1)
         return val("Category with ID " + std::to_string(CategoryId) + " does not exist");
 
+    int roundId = FindRoundId(eventId, categoryId, RoundId);
+
     if (roundId == -1)
         return val("Round with ID " + std::to_string(RoundId) + " was not found");
+
+    int questionId = FindQuestionId(eventId, categoryId, roundId, QuestionId);
 
     if (questionId == -1)
         return val("Question with ID " + std::to_string(QuestionId) + " was not found");
