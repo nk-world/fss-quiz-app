@@ -520,12 +520,12 @@ val loadRoundData(int EventId, int CategoryId, int RoundId)
     if (roundId == -1)
         return val("Round with ID " + std::to_string(RoundId) + " was not found");
 
-    json roundData = data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId];
+    json roundData = data["events"][eventId]["categories"][categoryId]["rounds"][roundId];
 
     for (int i = 0; i < roundData["questions"].size(); i++)
         Shuffle(roundData["questions"][i]["options"]);
 
-    return val(roundData.dump());
+    return val(roundData.dump(4));
 }
 
 val loadQuestion(int EventId, int CategoryId, int RoundId, int QuestionId)
@@ -550,9 +550,9 @@ val loadQuestion(int EventId, int CategoryId, int RoundId, int QuestionId)
     if (questionId == -1)
         return val("Question with ID " + std::to_string(QuestionId) + " was not found");
 
-    json question = data["events"][EventId]["categories"][CategoryId]["rounds"][RoundId]["questions"][QuestionId];
+    json question = data["events"][eventId]["categories"][categoryId]["rounds"][roundId]["questions"][questionId];
     Shuffle(question["options"]);
-    return val(question.dump());
+    return val(question.dump(4));
 }
 
 EMSCRIPTEN_BINDINGS(my_module)

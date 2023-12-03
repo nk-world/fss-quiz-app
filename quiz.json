@@ -1,3 +1,214 @@
 {
-	
+    "events": [
+        {
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Gold",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "General",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Argentina",
+                                    "correctAnswerIndex": 1,
+                                    "id": 1,
+                                    "options": [
+                                        "Argentina",
+                                        "Brazil",
+                                        "Mexico",
+                                        "France"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who won the world cup 2022?",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        {
+                            "id": 2,
+                            "name": "Rapid Fire",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Argentina",
+                                    "correctAnswerIndex": 1,
+                                    "id": 1,
+                                    "options": [
+                                        "Argentina",
+                                        "Brazil",
+                                        "Mexico",
+                                        "France"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who won the world cup 2022?",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "name": "Diamond",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "General",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Neil Armstrong",
+                                    "correctAnswerIndex": 3,
+                                    "id": 1,
+                                    "options": [
+                                        "Elon Musk",
+                                        "Jeff Bezos",
+                                        "Neil Armstrong",
+                                        "Bill Gates"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who is the first person to step on the moon?",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        {
+                            "id": 2,
+                            "name": "Rapid Fire",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Neil Armstrong",
+                                    "correctAnswerIndex": 3,
+                                    "id": 1,
+                                    "options": [
+                                        "Elon Musk",
+                                        "Jeff Bezos",
+                                        "Neil Armstrong",
+                                        "Bill Gates"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who is the first person to step on the moon?",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "id": 1,
+            "name": "Level A"
+        },
+        {
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Gold",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "General",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Argentina",
+                                    "correctAnswerIndex": 1,
+                                    "id": 1,
+                                    "options": [
+                                        "Argentina",
+                                        "Brazil",
+                                        "Mexico",
+                                        "France"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who won the world cup 2022?",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        {
+                            "id": 2,
+                            "name": "Rapid Fire",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Argentina",
+                                    "correctAnswerIndex": 1,
+                                    "id": 1,
+                                    "options": [
+                                        "Argentina",
+                                        "Brazil",
+                                        "Mexico",
+                                        "France"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who won the world cup 2022?",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "name": "Diamond",
+                    "rounds": [
+                        {
+                            "id": 1,
+                            "name": "General",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Neil Armstrong",
+                                    "correctAnswerIndex": 3,
+                                    "id": 1,
+                                    "options": [
+                                        "Elon Musk",
+                                        "Jeff Bezos",
+                                        "Neil Armstrong",
+                                        "Bill Gates"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who is the first person to step on the moon?",
+                                    "type": "text"
+                                },
+                                {
+                                    "correctAnswer": "Neil Armstrong",
+                                    "correctAnswerIndex": 3,
+                                    "id": 2,
+                                    "options": [
+                                        "Elon Musk",
+                                        "Jeff Bezos",
+                                        "Neil Armstrong",
+                                        "Bill Gates"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who is the first person to step on the moon?",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        {
+                            "id": 2,
+                            "name": "Rapid Fire",
+                            "questions": [
+                                {
+                                    "correctAnswer": "Neil Armstrong",
+                                    "correctAnswerIndex": 3,
+                                    "id": 1,
+                                    "options": [
+                                        "Elon Musk",
+                                        "Jeff Bezos",
+                                        "Neil Armstrong",
+                                        "Bill Gates"
+                                    ],
+                                    "path": "path",
+                                    "title": "Who is the first person to step on the moon?",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "id": 2,
+            "name": "Level B"
+        }
+    ]
 }
