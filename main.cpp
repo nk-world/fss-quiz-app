@@ -47,35 +47,54 @@ std::string initialize(const std::string &LoadUrl, const std::string &SaveUrl)
     return "initialized";
 }
 
-EM_ASYNC_JS(bool, saveDataToServer, (const char* saveUrl, const char* data), {
-    try {
-        let jsonData = UTF8ToString(data);
-        let url = UTF8ToString(saveUrl);
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: jsonData,
-        });
-        
-        if (response.ok) {
-            out('Data saved successfully!');
-            return true;
-        } else {
-            out('Failed to save data. Status: ' + response.status);
-            return false;
-        }
-    } catch (error) {
-        out('Error during data save: ' + error.toString());
-        return false;
-    }
-});
-
-
 bool SaveDataToServer()
 {
-   return saveDataToServer(saveUrl.c_str(), data.dump().c_str());
+    // std::cout<<jsonData.dump();
+    bool success = false;
+
+    // Create fetch attributes
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "POST");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    const char* headers[] = {"Content-Type", "application/json", NULL};
+    attr.requestHeaders = headers;
+    attr.requestData = data.dump().c_str();
+    attr.requestDataSize = data.dump().length();
+
+    // Use emscripten_fetch_create instead of emscripten_fetch
+    emscripten_fetch_t *fetch = emscripten_fetch(&attr, saveUrl.c_str());
+
+    if (!fetch)
+    {
+        // Handle fetch creation failure
+        return false;
+    }
+
+    // Wait for the fetch to complete
+    while (fetch->numBytes != fetch->totalBytes)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    // Process the result (handle success or error)
+    if (fetch->status == 200)
+    {
+        // Handle successful response, if needed
+        printf("Fetch successful!\n");
+        success = true;
+    }
+    else
+    {
+        // Handle other HTTP status codes or errors
+        // Log the status and status text for debugging
+        printf("HTTP Status: %d - %s\n", fetch->status, fetch->statusText);
+    }
+
+    // Clean up the fetch object
+    emscripten_fetch_close(fetch);
+
+    return success; // Indicate that the fetch request has been initiated
 }
 
 std::string LoadJsonFromServer()
