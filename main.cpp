@@ -276,8 +276,9 @@ std::string addCategory(std::string categoryName, int EventId, int CategoryId)
     int categoryId = FindCategoryId(eventId, CategoryId);
     json category = json::object();
 
-    if (categoryId != -1)
-        return "Category with ID " + std::to_string(CategoryId) + " already exists";
+    if (!data.empty())
+        if (categoryId != -1)
+            return "Category with ID " + std::to_string(CategoryId) + " already exists";
 
     category["name"] = categoryName;
     category["id"] = CategoryId;
@@ -336,8 +337,9 @@ std::string addRound(std::string name, int EventId, int CategoryId, int RoundId)
     int categoryId = FindCategoryId(eventId, CategoryId);
     int roundId = FindRoundId(eventId, categoryId, RoundId);
 
-    if (roundId != -1)
-        return "Round with ID " + std::to_string(RoundId) + " already exists";
+    if (!data.empty())
+        if (roundId != -1)
+            return "Round with ID " + std::to_string(RoundId) + " already exists";
 
     json round = json::object();
     round["name"] = name;
