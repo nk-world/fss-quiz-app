@@ -215,8 +215,9 @@ std::string addEvent(std::string name, int EventId)
 
     int eventId = FindEventId(EventId);
 
-    if(eventId != -1)
-        return "Event with ID " + std::to_string(EventId) + " already exists";
+    if(!data.empty())
+        if(eventId != -1)
+            return "Event with ID " + std::to_string(EventId) + " already exists";
 
     event["name"] = name;
     event["id"] = EventId;
